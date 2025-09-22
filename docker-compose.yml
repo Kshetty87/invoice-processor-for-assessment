@@ -1,0 +1,10 @@
+version: '3.9'
+
+services:
+  # Invoice service
+  api:
+    build: .
+    container_name: invoice-system
+    image: invoice-service:latest
+    ports:
+      - "8080:8080"
