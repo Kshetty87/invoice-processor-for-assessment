@@ -44,6 +44,14 @@ docker build -t invoice-service:latest .
 docker run -p 8080:8080 invoice-service:latest
 ```
 
+
+## 📦 Docker Compose
+### 1. Run it with:
+```bash
+docker-compose up --build
+```
+
+
 ### 3. Access API
 - Base URL: `http://localhost:8080`
 

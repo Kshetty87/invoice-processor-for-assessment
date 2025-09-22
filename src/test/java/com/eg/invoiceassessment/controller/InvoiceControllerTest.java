@@ -2,6 +2,7 @@ package com.eg.invoiceassessment.controller;
 
 
 import com.eg.invoiceassessment.dto.*;
+import com.eg.invoiceassessment.entity.Invoice;
 import com.eg.invoiceassessment.exception.InvalidRequestPayloadException;
 import com.eg.invoiceassessment.exception.ResourceNotFoundException;
 import com.eg.invoiceassessment.service.InvoiceService;
@@ -35,7 +36,7 @@ public class InvoiceControllerTest {
 
     @Test
     void testGetInvoice_Success() {
-        InvoiceResponse invoice = new InvoiceResponse(1L, 100.0,0.0, LocalDate.now(), "PENDING");
+        InvoiceResponse invoice = new InvoiceResponse(1L, 100.0,0.0, LocalDate.now().plusDays(10), Invoice.Status.PENDING.name());
 
         when(invoiceService.getInvoiceById(1L)).thenReturn(invoice);
 
@@ -55,7 +56,7 @@ public class InvoiceControllerTest {
     @Test
     void testCreateInvoice_Success() {
         InvoiceRequest request = new InvoiceRequest(200.0, LocalDate.now());
-        InvoiceResponse created = new InvoiceResponse(1L, 200.0,0.0, LocalDate.now(), "PENDING");
+        InvoiceResponse created = new InvoiceResponse(1L, 200.0,0.0, LocalDate.now(), Invoice.Status.PENDING.name());
 
         when(invoiceService.createInvoice(request)).thenReturn(created);
 
@@ -77,8 +78,8 @@ public class InvoiceControllerTest {
     @Test
     void testGetAllInvoices_Success() {
         List<InvoiceResponse> invoices = List.of(
-                new InvoiceResponse(1L, 100.0, 0.0,LocalDate.now(), "PENDING"),
-                new InvoiceResponse(2L, 200.0, 0.0, LocalDate.now(), "PENDING")
+                new InvoiceResponse(1L, 100.0, 0.0,LocalDate.now(), Invoice.Status.PENDING.name()),
+                new InvoiceResponse(2L, 200.0, 0.0, LocalDate.now(), Invoice.Status.PENDING.name())
         );
 
         when(invoiceService.getAllInvoices()).thenReturn(invoices);
@@ -99,7 +100,7 @@ public class InvoiceControllerTest {
     @Test
     void testPayInvoice_Success() {
         PaymentRequest request = new PaymentRequest(100.0);
-        InvoiceResponse paidInvoice = new InvoiceResponse(1L, 100.0,0.0, LocalDate.now(), "PAID");
+        InvoiceResponse paidInvoice = new InvoiceResponse(1L, 100.0,0.0, LocalDate.now(), Invoice.Status.PAID.name());
 
         when(invoiceService.payInvoice(1L, request)).thenReturn(paidInvoice);
 
@@ -107,16 +108,15 @@ public class InvoiceControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(paidInvoice, response.getBody().getData());
+
+
     }
 
     @Test
     void testPayInvoice_BadRequest() {
         PaymentRequest request = new PaymentRequest(0.0);
 
-        ResponseEntity<ResponseDTO<InvoiceResponse>> response = invoiceController.payInvoice(1L, request);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertNull(response.getBody());
+        assertThrows(InvalidRequestPayloadException.class, () -> invoiceController.payInvoice(1L, request));
     }
 
     @Test
@@ -134,10 +134,6 @@ public class InvoiceControllerTest {
     @Test
     void testProcessOverdueInvoices_BadRequest() {
         ProcessOverdueInvoiceRequest request = new ProcessOverdueInvoiceRequest(0.0, 0);
-
-        ResponseEntity<ResponseDTO<String>> response = invoiceController.processOverdueInvoices(request);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("Invalid late fee or overdue days", response.getBody().getData());
+        assertThrows(InvalidRequestPayloadException.class, () -> invoiceController.processOverdueInvoices(request));
     }
 }
