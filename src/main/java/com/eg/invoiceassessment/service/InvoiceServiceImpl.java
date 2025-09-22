@@ -76,6 +76,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
 
+    @Transactional
     @Override
         public void processOverdueInvoices(ProcessOverdueInvoiceRequest request) {
         List<Invoice> overdueInvoices = invoiceRepository
